@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SecureFinance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep:     #020408;
+            --bg-card:     #070d14;
+            --bg-panel:    #0b1520;
+            --border:      rgba(56, 189, 248, 0.12);
+            --border-bright: rgba(56, 189, 248, 0.35);
+            --accent:      #38bdf8;
+            --accent-dim:  rgba(56, 189, 248, 0.15);
+            --accent-glow: rgba(56, 189, 248, 0.5);
+            --green:       #34d399;
+            --green-dim:   rgba(52, 211, 153, 0.15);
+            --red:         #f87171;
+            --red-dim:     rgba(248, 113, 113, 0.15);
+            --text-pri:    #e2eeff;
+            --text-sec:    #6b8aaa;
+            --text-dim:    #2d4a66;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-pri);
+            font-family: 'DM Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* ── animated grid background ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(56,189,248,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56,189,248,.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            animation: gridDrift 30s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes gridDrift {
+            0%   { transform: translate(0, 0); }
+            100% { transform: translate(48px, 48px); }
+        }
+
+        /* ── corner glow orbs ── */
+        body::after {
+            content: '';
+            position: fixed;
+            width: 520px; height: 520px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(56,189,248,.09) 0%, transparent 70%);
+            top: -120px; left: -120px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb-br {
+            position: fixed;
+            width: 400px; height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(52,211,153,.07) 0%, transparent 70%);
+            bottom: -80px; right: -80px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── main container ── */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 440px;
+            animation: rise .8s cubic-bezier(.22,.68,0,1.2) both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── header ── */
+        .header {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: var(--accent-dim);
+            border: 1px solid var(--border-bright);
+            padding: 4px 12px;
+            border-radius: 100px;
+            margin-bottom: 14px;
+        }
+
+        .badge .dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: .4; transform: scale(.7); }
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            color: var(--text-pri);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--text-sec);
+            letter-spacing: .08em;
+        }
+
+        /* ── card ── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(56,189,248,.04),
+                0 24px 60px rgba(0,0,0,.6),
+                inset 0 1px 0 rgba(255,255,255,.03);
+        }
+
+        /* ── tabs ── */
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--text-sec);
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            position: relative;
+            transition: color .25s;
+        }
+
+        .tab.active {
+            color: var(--accent);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 20%; right: 20%;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 2px 2px 0 0;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .tab:hover:not(.active) { color: var(--text-pri); }
+
+        /* ── panels ── */
+        .panel {
+            padding: 28px;
+            display: none;
+        }
+
+        .panel.active { display: block; }
+
+        /* ── section label ── */
+        .label {
+            font-size: 10px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        /* ── drop zone ── */
+        .drop-zone {
+            border: 1.5px dashed var(--border-bright);
+            border-radius: 10px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .25s, background .25s;
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .drop-icon {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .drop-text {
+            font-size: 12px;
+            color: var(--text-sec);
+            line-height: 1.6;
+        }
+
+        .drop-text strong {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .filename {
+            font-size: 11px;
+            color: var(--green);
+            margin-top: 6px;
+            min-height: 16px;
+        }
+
+        /* ── buttons ── */
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform .15s, box-shadow .2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #020408;
+            font-weight: 500;
+            box-shadow: 0 0 20px rgba(56,189,248,.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 28px rgba(56,189,248,.4);
+        }
+
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 60%);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--border-bright);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-dim);
+            transform: translateY(-1px);
+            border-color: var(--accent);
+        }
+
+        /* ── status messages ── */
+        .status {
+            margin-top: 14px;
+            font-size: 11px;
+            letter-spacing: .04em;
+            min-height: 18px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status::before {
+            content: '';
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status:empty::before { display: none; }
+
+        .status.success { color: var(--green); }
+        .status.success::before { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+        .status.error { color: var(--red); }
+        .status.error::before { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+        /* ── decrypt info box ── */
+        .info-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 18px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            color: var(--text-sec);
+            margin-bottom: 8px;
+        }
+
+        .info-row:last-child { margin-bottom: 0; }
+
+        .info-icon { font-size: 13px; }
+
+        .info-val {
+            color: var(--text-pri);
+            font-size: 11px;
+        }
+
+        /* ── content output ── */
+        #fileContent {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            color: var(--green);
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 160px;
+            overflow-y: auto;
+            margin-top: 14px;
+            display: none;
+        }
+
+        #fileContent:not(:empty) { display: block; }
+
+        /* scrollbar */
+        #fileContent::-webkit-scrollbar { width: 4px; }
+        #fileContent::-webkit-scrollbar-track { background: transparent; }
+        #fileContent::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+
+        /* ── footer ── */
+        .footer {
+            padding: 14px 28px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-tag {
+            font-size: 9px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        .chips {
+            display: flex;
+            gap: 6px;
+        }
+
+        .chip {
+            font-size: 9px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: var(--accent-dim);
+            border: 1px solid var(--border-bright);
+            padding: 2px 8px;
+            border-radius: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="orb-br"></div>
+
+<div class="container">
+
+    <div class="header">
+        <div class="badge"><span class="dot"></span> System Online</div>
+        <h1>Secure<span>Finance</span></h1>
+        <p class="subtitle">Hybrid AES + ECC Encryption System</p>
+    </div>
+
+    <div class="card">
+
+        <!-- tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('encrypt', this)">⬆ Encrypt</button>
+            <button class="tab" onclick="switchTab('decrypt', this)">⬇ Decrypt</button>
+        </div>
+
+        <!-- encrypt panel -->
+        <div class="panel active" id="panel-encrypt">
+            <p class="label">Select file to encrypt</p>
+
+            <form id="uploadForm">
+                <div class="drop-zone" id="dropZone">
+                    <input type="file" name="file" required id="fileInput">
+                    <div class="drop-icon">📂</div>
+                    <div class="drop-text">
+                        <strong>Click to browse</strong> or drag & drop<br>
+                        Any file type supported
+                    </div>
+                    <div class="filename" id="fileName"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Encrypt &amp; Upload</button>
+            </form>
+
+            <p id="uploadStatus" class="status"></p>
+        </div>
+
+        <!-- decrypt panel -->
+        <div class="panel" id="panel-decrypt">
+
+            <p class="label">Encryption details</p>
+
+            <div class="info-box">
+                <div class="info-row">
+                    <span class="info-icon"></span>
+                    <span>Key Exchange</span>
+                    <span class="info-val" style="margin-left:auto">ECDH P-256</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon"></span>
+                    <span>Cipher</span>
+                    <span class="info-val" style="margin-left:auto">AES-256-GCM</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-icon"></span>
+                    <span>MAC</span>
+                    <span class="info-val" style="margin-left:auto">HMAC-SHA-384</span>
+                </div>
+            </div>
+
+            <button onclick="decrypt()" class="btn btn-outline">Decrypt File</button>
+
+            <p id="decryptStatus" class="status"></p>
+            <pre id="fileContent"></pre>
+        </div>
+
+        <!-- footer -->
+        <div class="footer">
+            <span class="footer-tag">v2.4.1 · end-to-end</span>
+            <div class="chips">
+                <span class="chip">AES</span>
+                <span class="chip">ECC</span>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    /* ── tab switching ── */
+    function switchTab(name, el) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('panel-' + name).classList.add('active');
+    }
+
+    /* ── file name preview ── */
+    document.getElementById('fileInput').addEventListener('change', function () {
+        const name = this.files[0] ? this.files[0].name : '';
+        document.getElementById('fileName').textContent = name ? '✓ ' + name : '';
+    });
+
+    /* drag-over styling */
+    const dz = document.getElementById('dropZone');
+    dz.addEventListener('dragover',  () => dz.classList.add('dragover'));
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop',      () => dz.classList.remove('dragover'));
+
+    /* ── upload (unchanged logic) ── */
+    document.getElementById("uploadForm").onsubmit = async (e) => {
+        e.preventDefault();
+
+        let formData = new FormData();
+        let fileInput = document.querySelector('input[type="file"]');
+
+        formData.append("file", fileInput.files[0]);
+
+        let res = await fetch("/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        let data = await res.json();
+
+        let status = document.getElementById("uploadStatus");
+
+        if (data.error) {
+            status.innerText = data.error;
+            status.className = "status error";
+        } else {
+            status.innerText = "File encrypted successfully";
+            status.className = "status success";
+        }
+    };
+
+    /* ── decrypt (unchanged logic) ── */
+    async function decrypt() {
+
+        let res = await fetch("/download", {
+            method: "POST"
+        });
+
+        let data = await res.json();
+
+        let status = document.getElementById("decryptStatus");
+        let contentBox = document.getElementById("fileContent");
+
+        if (data.error) {
+            status.innerText = data.error;
+            status.className = "status error";
+            contentBox.innerText = "";
+        } else {
+            status.innerText = data.message;
+            status.className = "status success";
+
+            contentBox.innerText = data.content;
+        }
+    }
+</script>
+
+</body>
+</html>

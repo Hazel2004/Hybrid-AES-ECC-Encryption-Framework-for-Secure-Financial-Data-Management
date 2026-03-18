@@ -3,3 +3,15 @@ __pycache__/
 *.bin
 *.pem
 *.pyc
+keys/
+# Ignore all Python files
+*.py
+
+# But allow these specific files
+!ecc.py
+!aes.py
+!app.py
+!download.py
+!upload.py
+!test_pipeline.py
+
